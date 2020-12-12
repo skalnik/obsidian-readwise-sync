@@ -18,7 +18,6 @@ export default class ObsidianReadwise extends Plugin {
 
   onload() {
     this.readCache();
-    this.client = new ReadwiseClient("");
   }
 
   readCache() {
@@ -35,6 +34,7 @@ export default class ObsidianReadwise extends Plugin {
       })
     } else {
       lastUpdate = new Date(new Date().getTime() - 100 * 60 * 60 * 24 * 365).toISOString()
+      this.client = new ReadwiseClient(token, lastUpdate);
       this.fetchBooks()
     }
   }

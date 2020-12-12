@@ -36,11 +36,15 @@ export default class ReadwiseClient {
   }
 
   apiRequest<T>(path: string, params: {}): Promise<T> {
-    const request = new Request(this.baseUrl + path, {
+    let url = new URL(this.baseUrl + path);
+    url.search = new URLSearchParams(params).toString();
+
+    const request = new Request(url.toString(), {
+      credentials: 'include',
+      mode: 'no-cors',
       headers: {
-        Authorization: `token ${this.token}`
+        'Authorization': `Token ${this.token}`
       },
-      body: new URLSearchParams(params)
     });
 
     return fetch(request).then(response => {
