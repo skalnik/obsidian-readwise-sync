@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
-    "build": "rollup --config rollup.config.js"
+    "build": "rollup --config rollup.config.js",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix"
   },
   "dependencies": {
     "axios": "^0.21.0"
@@ -15,6 +17,9 @@
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@rollup/plugin-typescript": "^6.0.0",
     "@types/node": "^14.14.12",
+    "@typescript-eslint/eslint-plugin": "^4.9.1",
+    "@typescript-eslint/parser": "^4.9.1",
+    "eslint": "^7.15.0",
     "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
     "rollup": "^2.32.1",
     "tslib": "^2.0.3",
