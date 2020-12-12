@@ -1,12 +1,12 @@
 "use strict";
-import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Plugin } from 'obsidian';
 import ReadwiseClient from './src/readwise';
+import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
 
 const fs = require("fs");
 const path = require("path");
 
 const cacheFilename = ".cache.json"
-const token = "";
 const inboxDir = "Inbox";
 const resourceDir = "Resources";
 const forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g
@@ -15,9 +15,14 @@ let lastUpdate = "";
 
 export default class ObsidianReadwise extends Plugin {
   client: ReadwiseClient;
+  settings: ReadwiseSettings;
 
-  onload() {
-    this.readCache();
+  async onload() {
+    this.settings = (await this.loadData()) || new ReadwiseSettings();
+    this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
+    this.addRibbonIcon('dice', 'Readwise', () => {
+      this.readCache();
+    });
   }
 
   readCache() {
@@ -34,7 +39,7 @@ export default class ObsidianReadwise extends Plugin {
       })
     } else {
       lastUpdate = new Date(new Date().getTime() - 100 * 60 * 60 * 24 * 365).toISOString()
-      this.client = new ReadwiseClient(token, lastUpdate);
+      this.client = new ReadwiseClient(this.settings.token, lastUpdate);
       this.fetchBooks()
     }
   }
