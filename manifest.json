@@ -1,0 +1,10 @@
+{
+	"id": "obsidian-readwise",
+	"name": "Obsidian Readwise",
+	"version": "0.0.1",
+	"minAppVersion": "0.9.20",
+	"description": "Syncs Readwise highlights into Obsidian",
+	"author": "Mike Skalnik",
+	"authorUrl": "https://skalnik.com",
+	"isDesktopOnly": false
+}
