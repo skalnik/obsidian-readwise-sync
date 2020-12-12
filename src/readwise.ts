@@ -35,7 +35,7 @@ export default class ReadwiseClient {
     return this.apiRequest<[Highlight]>('/highlights', params);
   }
 
-  apiRequest<T>(path: string, params: {}): Promise<T> {
+  async apiRequest<T>(path: string, params: {}): Promise<T> {
     let url = new URL(this.baseUrl + path);
     url.search = new URLSearchParams(params).toString();
 
@@ -47,14 +47,14 @@ export default class ReadwiseClient {
       },
     });
 
-    return fetch(request).then(response => {
+    const response = await fetch(request).then(response => {
       if(!response.ok) {
         throw new Error(response.statusText)
       }
 
       return response.json() as Promise<{ data: { results: T } }>
-    }).then(response => {
-      return response.data.results
     })
+
+    return response.data.results
   }
 }
