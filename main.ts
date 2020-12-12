@@ -1,7 +1,7 @@
 "use strict";
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import ReadwiseClient from './src/readwise';
 
-const axios = require("axios").default;
 const fs = require("fs");
 const path = require("path");
 
@@ -14,8 +14,11 @@ let books: { [id: number]: { title: string, normalizedTitle: string } } = {};
 let lastUpdate = "";
 
 export default class ObsidianReadwise extends Plugin {
+  client: ReadwiseClient;
+
   onload() {
     this.readCache();
+    this.client = new ReadwiseClient("");
   }
 
   readCache() {
@@ -38,20 +41,9 @@ export default class ObsidianReadwise extends Plugin {
 
   fetchBooks() {
     console.log("Fetching books…");
-    const options = {
-      url: "https://readwise.io/api/v2/books",
-      headers: {
-        Authorization: `token ${token}`,
-      },
-      params: {
-        page_size: "1000",
-        category: "books",
-        last_highlighted_at__gt: "2019-12-01T21:35:53Z",
-      },
-    };
 
-    axios.request(options).then((res: { data: { results: [ { id: number, title: string, author: string } ] } } ) => {
-      for (const book of res.data.results) {
+    this.client.fetchBooks().then((apiBooks) => {
+      for (const book of apiBooks) {
         let normalizedTitle = book.title.replace(forbiddenCharRegex, "-")
         books[book.id] = {
           title: book.title,
@@ -84,18 +76,9 @@ export default class ObsidianReadwise extends Plugin {
 
   fetchHighlights() {
     console.log("Fetching highlights…");
-    const options = {
-      url: "https://readwise.io/api/v2/highlights",
-      headers: {
-        Authorization: `token ${token}`,
-      },
-      params: {
-        highlighted_at__gt: "2020-01-01T21:35:53Z",
-      },
-    };
 
-    axios.request(options).then((res: { data: { results: [ {id: number, book_id: number, text: string, note: string }]} }) => {
-      for (const highlight of res.data.results) {
+    this.client.fetchHighlights().then((highlights) => {
+      for (const highlight of highlights) {
         const filename = path.join(inboxDir, `${highlight.id}.md`)
 
         let body = `> ${highlight.text}
