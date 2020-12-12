@@ -17,15 +17,15 @@ export default class ReadwiseClient {
   lastUpdate: string;
 
   constructor(token: string, lastUpdate = "") {
-    this.token = token
-    this.lastUpdate = lastUpdate
+    this.token = token;
+    this.lastUpdate = lastUpdate;
   }
 
   fetchBooks(): Promise<[Book]> {
     console.log("Fetching books…");
-    const params = { page_size: "1000", category: "books", last_highlighted_at__gt: "2019-12-01T21:35:53Z", }
+    const params = { page_size: "1000", category: "books", last_highlighted_at__gt: "2019-12-01T21:35:53Z", };
 
-    return this.apiRequest<[Book]>('/books', params)
+    return this.apiRequest<[Book]>('/books', params);
   }
 
   fetchHighlights(): Promise<[Highlight]> {
@@ -49,12 +49,12 @@ export default class ReadwiseClient {
 
     const response = await fetch(request).then(response => {
       if(!response.ok) {
-        throw new Error(response.statusText)
+        throw new Error(response.statusText);
       }
 
-      return response.json() as Promise<{ data: { results: T } }>
-    })
+      return response.json() as Promise<{ data: { results: T } }>;
+    });
 
-    return response.data.results
+    return response.data.results;
   }
 }

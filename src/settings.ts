@@ -22,7 +22,7 @@ export class ReadwiseSettingsTab extends PluginSettingTab {
             plugin.settings.token = value;
             plugin.saveData(plugin.settings);
             console.log(`Token: ${plugin.settings}`);
-          })
+          });
       });
   }
 }

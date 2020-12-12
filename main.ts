@@ -5,10 +5,10 @@ import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const cacheFilename = ".cache.json"
+const cacheFilename = ".cache.json";
 const inboxDir = "Inbox";
 const resourceDir = "Resources";
-const forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g
+const forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g;
 let books: { [id: number]: { title: string, normalizedTitle: string } } = {};
 let lastUpdate = "";
 
@@ -29,17 +29,17 @@ export default class ObsidianReadwise extends Plugin {
       fs.readFile(cacheFilename, (err: Error, data: string) => {
         if (err) throw err;
 
-        const cache = JSON.parse(data)
+        const cache = JSON.parse(data);
 
         books = cache.books;
         lastUpdate = cache.lastUpdate;
 
-        this.fetchBooks()
-      })
+        this.fetchBooks();
+      });
     } else {
-      lastUpdate = new Date(new Date().getTime() - 100 * 60 * 60 * 24 * 365).toISOString()
+      lastUpdate = new Date(new Date().getTime() - 100 * 60 * 60 * 24 * 365).toISOString();
       this.client = new ReadwiseClient(this.settings.token, lastUpdate);
-      this.fetchBooks()
+      this.fetchBooks();
     }
   }
 
@@ -48,11 +48,11 @@ export default class ObsidianReadwise extends Plugin {
 
     this.client.fetchBooks().then((apiBooks) => {
       for (const book of apiBooks) {
-        const normalizedTitle = book.title.replace(forbiddenCharRegex, "-")
+        const normalizedTitle = book.title.replace(forbiddenCharRegex, "-");
         books[book.id] = {
           title: book.title,
           normalizedTitle: normalizedTitle
-        }
+        };
 
         const filename = path.join(resourceDir, `${normalizedTitle}.md`);
         const body = `---
@@ -83,7 +83,7 @@ export default class ObsidianReadwise extends Plugin {
 
     this.client.fetchHighlights().then((highlights) => {
       for (const highlight of highlights) {
-        const filename = path.join(inboxDir, `${highlight.id}.md`)
+        const filename = path.join(inboxDir, `${highlight.id}.md`);
 
         let body = `> ${highlight.text}
 — [[${books[highlight.book_id].normalizedTitle}]]`;
@@ -113,7 +113,7 @@ export default class ObsidianReadwise extends Plugin {
 
     fs.writeFile(cacheFilename, JSON.stringify(cache), (err: Error) => {
       if (err) throw err;
-      console.log("Cache updated!")
+      console.log("Cache updated!");
     });
   }
 }
