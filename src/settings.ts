@@ -6,8 +6,8 @@ export class ReadwiseSettings {
 }
 
 export class ReadwiseSettingsTab extends PluginSettingTab {
-  display() {
-    let { containerEl } = this;
+  display(): void {
+    const { containerEl } = this;
     const plugin: ObsidianReadwise = (this as any).plugin;
     containerEl.empty();
     containerEl.createEl('h2', { text: 'Settings for Obsidian ← Readwise.' });

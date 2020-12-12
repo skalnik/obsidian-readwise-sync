@@ -35,8 +35,8 @@ export default class ReadwiseClient {
     return this.apiRequest<[Highlight]>('/highlights', params);
   }
 
-  async apiRequest<T>(path: string, params: {}): Promise<T> {
-    let url = new URL(this.baseUrl + path);
+  async apiRequest<T>(path: string, params: Record<string, string>): Promise<T> {
+    const url = new URL(this.baseUrl + path);
     url.search = new URLSearchParams(params).toString();
 
     const request = new Request(url.toString(), {

@@ -2,9 +2,8 @@
 import { Plugin } from 'obsidian';
 import ReadwiseClient from './src/readwise';
 import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
-
-const fs = require("fs");
-const path = require("path");
+import * as fs from 'fs';
+import * as path from 'path';
 
 const cacheFilename = ".cache.json"
 const inboxDir = "Inbox";
@@ -17,7 +16,7 @@ export default class ObsidianReadwise extends Plugin {
   client: ReadwiseClient;
   settings: ReadwiseSettings;
 
-  async onload() {
+  async onload(): Promise<void> {
     this.settings = (await this.loadData()) || new ReadwiseSettings();
     this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
     this.addRibbonIcon('dice', 'Readwise', () => {
@@ -25,7 +24,7 @@ export default class ObsidianReadwise extends Plugin {
     });
   }
 
-  readCache() {
+  readCache(): void {
     if (fs.existsSync(cacheFilename)) {
       fs.readFile(cacheFilename, (err: Error, data: string) => {
         if (err) throw err;
@@ -44,12 +43,12 @@ export default class ObsidianReadwise extends Plugin {
     }
   }
 
-  fetchBooks() {
+  fetchBooks(): void {
     console.log("Fetching books…");
 
     this.client.fetchBooks().then((apiBooks) => {
       for (const book of apiBooks) {
-        let normalizedTitle = book.title.replace(forbiddenCharRegex, "-")
+        const normalizedTitle = book.title.replace(forbiddenCharRegex, "-")
         books[book.id] = {
           title: book.title,
           normalizedTitle: normalizedTitle
@@ -79,7 +78,7 @@ export default class ObsidianReadwise extends Plugin {
     });
   }
 
-  fetchHighlights() {
+  fetchHighlights(): void {
     console.log("Fetching highlights…");
 
     this.client.fetchHighlights().then((highlights) => {
@@ -106,7 +105,7 @@ export default class ObsidianReadwise extends Plugin {
     });
   }
 
-  writeCache() {
+  writeCache(): void {
     const cache = {
       books: books,
       lastUpdate: (new Date()).toISOString()
