@@ -26,7 +26,7 @@ export default class ObsidianReadwise extends Plugin {
 
   readCache(): void {
     if (fs.existsSync(cacheFilename)) {
-      fs.readFile(cacheFilename, (err: Error, data: string) => {
+      fs.readFile(cacheFilename, 'utf8', (err: Error, data: string) => {
         if (err) throw err;
 
         const cache = JSON.parse(data);
