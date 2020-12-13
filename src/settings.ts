@@ -3,6 +3,8 @@ import ObsidianReadwise from '../main';
 
 export class ReadwiseSettings {
   token = "";
+  inboxDir = "Inbox/";
+  resourcesDir = "Reousrces/";
 }
 
 export class ReadwiseSettingsTab extends PluginSettingTab {
@@ -21,7 +23,30 @@ export class ReadwiseSettingsTab extends PluginSettingTab {
           .onChange((value) => {
             plugin.settings.token = value;
             plugin.saveData(plugin.settings);
-            console.log(`Token: ${plugin.settings}`);
+          });
+      });
+
+    new Setting(containerEl)
+      .setName('Inbox Directory')
+      .setDesc('Where should new highlights be created?')
+      .addText(text => {
+        text.setPlaceholder('Inbox/')
+          .setValue(plugin.settings.inboxDir)
+          .onChange((value) => {
+            plugin.settings.inboxDir = value;
+            plugin.saveData(plugin.settings);
+          });
+      });
+
+    new Setting(containerEl)
+      .setName('Resource Directory')
+      .setDesc('Directory where highlighted books will be created to reference')
+      .addText(text => {
+        text.setPlaceholder('Resources/')
+          .setValue(plugin.settings.resourcesDir)
+          .onChange((value) => {
+            plugin.settings.resourcesDir = value;
+            plugin.saveData(plugin.settings);
           });
       });
   }

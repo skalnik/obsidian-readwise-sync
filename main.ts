@@ -6,8 +6,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const cacheFilename = ".cache.json";
-const inboxDir = "Inbox";
-const resourceDir = "Resources";
 const forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g;
 let books: { [id: number]: { title: string, normalizedTitle: string } } = {};
 let lastUpdate = "";
@@ -52,7 +50,7 @@ export default class ObsidianReadwise extends Plugin {
           normalizedTitle: normalizedTitle
         };
 
-        const filename = path.join(resourceDir, `${normalizedTitle}.md`);
+        const filename = path.join(this.settings.resourcesDir, `${normalizedTitle}.md`);
         const body = `---
           tags: book
           ---
@@ -77,11 +75,9 @@ export default class ObsidianReadwise extends Plugin {
   }
 
   fetchHighlights(): void {
-    console.log("Fetching highlights…");
-
     this.client.fetchHighlights().then((highlights) => {
       for (const highlight of highlights) {
-        const filename = path.join(inboxDir, `${highlight.id}.md`);
+        const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
 
         let body = `> ${highlight.text}
 — [[${books[highlight.book_id].normalizedTitle}]]`;
