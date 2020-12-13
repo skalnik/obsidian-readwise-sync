@@ -23,16 +23,22 @@ export default class ObsidianReadwise extends Plugin {
   cachedBooks: BookCache;
 
   async onload(): Promise<void> {
+    this.settings = (await this.loadData()) || new ReadwiseSettings();
+    this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
+    this.addCommand({
+      id: 'readwise-sync',
+      name: 'Sync Readwise highlights',
+      callback: async () => this.syncNotes()
+    });
+  }
+
+  syncNotes(): void {
     this.vault = this.app.vault;
     this.fs = this.vault.adapter;
     this.lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
     this.cachedBooks = {};
 
-    this.settings = (await this.loadData()) || new ReadwiseSettings();
-    this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
-    this.addRibbonIcon('dice', 'Readwise', () => {
-      this.readCache();
-    });
+    this.readCache();
   }
 
   async readCache(): Promise<void> {
