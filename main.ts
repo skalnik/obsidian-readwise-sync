@@ -54,18 +54,18 @@ export default class ObsidianReadwise extends Plugin {
         normalizedTitle: normalizedTitle
       };
       const filename = path.join(this.settings.resourcesDir, `${normalizedTitle}.md`);
-      const body = ['---',
-        'tags: book',
-        '---',
-        '',
-        `**Title**: ${book.title}`,
-        `**Author**: [[${book.author}]]`,
-        `**ISBN**: `,
-        `**Read**: [[]]`,
-      ].join("\n");
-
       const exists = await this.fs.exists(filename);
       if (!exists) {
+        const body = ['---',
+          'tags: book',
+          '---',
+          '',
+          `**Title**: ${book.title}`,
+          `**Author**: [[${book.author}]]`,
+          `**ISBN**: `,
+          `**Read**: [[]]`,
+        ].join("\n");
+
         this.fs.write(filename, body).then(()=> console.log(`${normalizedTitle}.md created!`));
       }
     }
@@ -81,16 +81,16 @@ export default class ObsidianReadwise extends Plugin {
       const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
       console.log('Imma save it as: ', filename);
 
-      let body = [`> ${highlight.text}`,
-        `— [[${books[highlight.book_id].normalizedTitle}]]`
-      ].join("\n");
-
-      if (highlight.note.length > 0) {
-        body += `\n\n${highlight.note}`;
-      }
-
       const exists = await this.fs.exists(filename);
       if (!exists) {
+        let body = [`> ${highlight.text}`,
+          `— [[${books[highlight.book_id].normalizedTitle}]]`
+        ].join("\n");
+
+        if (highlight.note.length > 0) {
+          body += `\n\n${highlight.note}`;
+        }
+
         this.fs.write(filename, body).then(() => {
           console.log(`${highlight.id}.md created!`);
         });
