@@ -23,7 +23,7 @@ export default class ReadwiseClient {
 
   fetchBooks(): Promise<[Book]> {
     console.log("Fetching books…");
-    const params = { page_size: "1000", category: "books", last_highlighted_at__gt: "2019-12-01T21:35:53Z", };
+    const params = { page_size: "1000", category: "books", last_highlighted_at__gt: this.lastUpdate, };
 
     return this.apiRequest<[Book]>('/books', params);
   }
