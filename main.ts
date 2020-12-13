@@ -4,20 +4,29 @@ import ReadwiseClient from './src/readwise';
 import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
 import * as path from 'path';
 
-const cacheFilename = ".cache.json";
-const forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g;
-let books: { [id: number]: { title: string, normalizedTitle: string } } = {};
-let lastUpdate = "";
+type BookCache = {
+  [id: number]: {
+    title: string;
+    normalizedTitle: string;
+  }
+};
 
 export default class ObsidianReadwise extends Plugin {
+  cacheFilename = ".cache.json";
+  forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g;
+
   client: ReadwiseClient;
   settings: ReadwiseSettings;
   fs: DataAdapter;
   vault: Vault;
+  lastUpdate: string;
+  cachedBooks: BookCache;
 
   async onload(): Promise<void> {
     this.vault = this.app.vault;
     this.fs = this.vault.adapter;
+    this.lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
+    this.cachedBooks = {};
 
     this.settings = (await this.loadData()) || new ReadwiseSettings();
     this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
@@ -27,20 +36,19 @@ export default class ObsidianReadwise extends Plugin {
   }
 
   async readCache(): Promise<void> {
-    const exists = await this.fs.exists(cacheFilename);
-    lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
+    const exists = await this.fs.exists(this.cacheFilename);
     if (exists) {
       console.log("Oh hey dope, cache exists");
-      const data = await this.fs.read(cacheFilename);
+      const data = await this.fs.read(this.cacheFilename);
       const cache = JSON.parse(data);
 
-      books = cache.books;
-      lastUpdate = cache.lastUpdate;
+      this.cachedBooks = cache.books;
+      this.lastUpdate = cache.lastUpdate;
     }
 
-    console.log(`Alright, lastUpdate: ${lastUpdate}`);
+    console.log(`Alright, lastUpdate: ${this.lastUpdate}`);
 
-    this.client = new ReadwiseClient(this.settings.token, lastUpdate);
+    this.client = new ReadwiseClient(this.settings.token, this.lastUpdate);
     this.fetchBooks();
   }
 
@@ -48,8 +56,8 @@ export default class ObsidianReadwise extends Plugin {
     const apiBooks = await this.client.fetchBooks();
 
     for (const book of apiBooks) {
-      const normalizedTitle = book.title.replace(forbiddenCharRegex, "-");
-      books[book.id] = {
+      const normalizedTitle = book.title.replace(this.forbiddenCharRegex, "-");
+      this.cachedBooks[book.id] = {
         title: book.title,
         normalizedTitle: normalizedTitle
       };
@@ -84,7 +92,7 @@ export default class ObsidianReadwise extends Plugin {
       const exists = await this.fs.exists(filename);
       if (!exists) {
         let body = [`> ${highlight.text}`,
-          `— [[${books[highlight.book_id].normalizedTitle}]]`
+          `— [[${this.cachedBooks[highlight.book_id].normalizedTitle}]]`
         ].join("\n");
 
         if (highlight.note.length > 0) {
@@ -102,11 +110,11 @@ export default class ObsidianReadwise extends Plugin {
 
   writeCache(): void {
     const cache = {
-      books: books,
+      books: this.cachedBooks,
       lastUpdate: (new Date()).toISOString()
     };
 
-    this.fs.write(cacheFilename, JSON.stringify(cache)).then(()=> {
+    this.fs.write(this.cacheFilename, JSON.stringify(cache)).then(()=> {
       console.log("Cache updated!");
     });
   }
