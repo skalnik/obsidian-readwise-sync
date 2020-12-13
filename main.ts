@@ -1,8 +1,7 @@
 "use strict";
-import { Plugin } from 'obsidian';
+import { DataAdapter, Vault, Plugin } from 'obsidian';
 import ReadwiseClient from './src/readwise';
 import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
-import * as fs from 'fs';
 import * as path from 'path';
 
 const cacheFilename = ".cache.json";
@@ -13,8 +12,13 @@ let lastUpdate = "";
 export default class ObsidianReadwise extends Plugin {
   client: ReadwiseClient;
   settings: ReadwiseSettings;
+  fs: DataAdapter;
+  vault: Vault;
 
   async onload(): Promise<void> {
+    this.vault = this.app.vault;
+    this.fs = this.vault.adapter;
+
     this.settings = (await this.loadData()) || new ReadwiseSettings();
     this.addSettingTab(new ReadwiseSettingsTab(this.app, this));
     this.addRibbonIcon('dice', 'Readwise', () => {
@@ -22,81 +26,78 @@ export default class ObsidianReadwise extends Plugin {
     });
   }
 
-  readCache(): void {
-    if (fs.existsSync(cacheFilename)) {
-      fs.readFile(cacheFilename, 'utf8', (err: Error, data: string) => {
-        if (err) throw err;
+  async readCache(): Promise<void> {
+    const exists = await this.fs.exists(cacheFilename);
+    lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
+    if (exists) {
+      console.log("Oh hey dope, cache exists");
+      const data = await this.fs.read(cacheFilename);
+      const cache = JSON.parse(data);
 
-        const cache = JSON.parse(data);
-
-        books = cache.books;
-        lastUpdate = cache.lastUpdate;
-
-        this.fetchBooks();
-      });
-    } else {
-      lastUpdate = new Date(new Date().getTime() - 100 * 60 * 60 * 24 * 365).toISOString();
-      this.client = new ReadwiseClient(this.settings.token, lastUpdate);
-      this.fetchBooks();
+      books = cache.books;
+      lastUpdate = cache.lastUpdate;
     }
+
+    console.log(`Alright, lastUpdate: ${lastUpdate}`);
+
+    this.client = new ReadwiseClient(this.settings.token, lastUpdate);
+    this.fetchBooks();
   }
 
-  fetchBooks(): void {
-    this.client.fetchBooks().then((apiBooks) => {
-      for (const book of apiBooks) {
-        const normalizedTitle = book.title.replace(forbiddenCharRegex, "-");
-        books[book.id] = {
-          title: book.title,
-          normalizedTitle: normalizedTitle
-        };
+  async fetchBooks(): Promise<void> {
+    const apiBooks = await this.client.fetchBooks();
 
-        const filename = path.join(this.settings.resourcesDir, `${normalizedTitle}.md`);
-        const body = `---
-          tags: book
-          ---
+    for (const book of apiBooks) {
+      const normalizedTitle = book.title.replace(forbiddenCharRegex, "-");
+      books[book.id] = {
+        title: book.title,
+        normalizedTitle: normalizedTitle
+      };
+      const filename = path.join(this.settings.resourcesDir, `${normalizedTitle}.md`);
+      const body = ['---',
+        'tags: book',
+        '---',
+        '',
+        `**Title**: ${book.title}`,
+        `**Author**: [[${book.author}]]`,
+        `**ISBN**: `,
+        `**Read**: [[]]`,
+      ].join("\n");
 
-          **Title**: ${book.title}
-          **Author**: [[${book.author}]]
-          **Read**: [[{{date}}]]
-          })
-          `;
-
-        if (!fs.existsSync(filename)) {
-          fs.writeFile(filename, body, (err: Error) => {
-            if (err) throw err;
-
-            console.log(`${normalizedTitle}.md created!`);
-          });
-        }
+      const exists = await this.fs.exists(filename);
+      if (!exists) {
+        this.fs.write(filename, body).then(()=> console.log(`${normalizedTitle}.md created!`));
       }
-      console.log("All books created!");
-      this.fetchHighlights();
-    });
+    }
+
+    console.log("All books fetched!");
+    this.fetchHighlights();
   }
 
-  fetchHighlights(): void {
-    this.client.fetchHighlights().then((highlights) => {
-      for (const highlight of highlights) {
-        const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
+  async fetchHighlights(): Promise<void> {
+    const highlights = await this.client.fetchHighlights();
+    for (const highlight of highlights) {
+      console.log('I have a highlight, it is: ', highlight);
+      const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
+      console.log('Imma save it as: ', filename);
 
-        let body = `> ${highlight.text}
-— [[${books[highlight.book_id].normalizedTitle}]]`;
+      let body = [`> ${highlight.text}`,
+        `— [[${books[highlight.book_id].normalizedTitle}]]`
+      ].join("\n");
 
-        if (highlight.note.length > 0) {
-          body += `\n\n${highlight.note}`;
-        }
-
-        if (!fs.existsSync(filename)) {
-          fs.writeFile(filename, body, (err: Error) => {
-            if (err) throw err;
-
-            console.log(`${highlight.id}.md created!`);
-          });
-        }
+      if (highlight.note.length > 0) {
+        body += `\n\n${highlight.note}`;
       }
-      console.log("All highlights created!");
-      this.writeCache();
-    });
+
+      const exists = await this.fs.exists(filename);
+      if (!exists) {
+        this.fs.write(filename, body).then(() => {
+          console.log(`${highlight.id}.md created!`);
+        });
+      }
+    }
+    console.log("All highlights fetched!");
+    this.writeCache();
   }
 
   writeCache(): void {
@@ -105,8 +106,7 @@ export default class ObsidianReadwise extends Plugin {
       lastUpdate: (new Date()).toISOString()
     };
 
-    fs.writeFile(cacheFilename, JSON.stringify(cache), (err: Error) => {
-      if (err) throw err;
+    this.fs.write(cacheFilename, JSON.stringify(cache)).then(()=> {
       console.log("Cache updated!");
     });
   }
