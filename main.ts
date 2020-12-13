@@ -1,5 +1,5 @@
 "use strict";
-import { DataAdapter, Vault, Plugin } from 'obsidian';
+import { Notice, DataAdapter, Vault, Plugin } from 'obsidian';
 import ReadwiseClient from './src/readwise';
 import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
 import * as path from 'path';
@@ -108,6 +108,7 @@ export default class ObsidianReadwise extends Plugin {
         });
       }
     }
+    new Notice('Readwise highlights synced!');
     this.writeCache();
   }
 
