@@ -36,12 +36,10 @@ export default class ReadwiseClient {
   }
 
   async apiRequest<T>(path: string, params: Record<string, string>): Promise<T> {
-    const url = new URL(this.baseUrl + path);
+    const url = new URL("https://cors-anywhere.herokuapp.com/" + this.baseUrl + path);
     url.search = new URLSearchParams(params).toString();
 
     const request = new Request(url.toString(), {
-      credentials: 'include',
-      mode: 'no-cors',
       headers: {
         'Authorization': `Token ${this.token}`
       },
@@ -51,10 +49,10 @@ export default class ReadwiseClient {
       if(!response.ok) {
         throw new Error(response.statusText);
       }
-
-      return response.json() as Promise<{ data: { results: T } }>;
+      return response;
     });
+    const json = await (response.json() as Promise<{ results: T }>);
 
-    return response.data.results;
+    return json.results;
   }
 }
