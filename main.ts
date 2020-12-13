@@ -36,6 +36,8 @@ export default class ObsidianReadwise extends Plugin {
   }
 
   async readCache(): Promise<void> {
+    // 1 year ago
+    this.lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
     const exists = await this.fs.exists(this.cacheFilename);
     if (exists) {
       console.log("Oh hey dope, cache exists");
@@ -91,6 +93,11 @@ export default class ObsidianReadwise extends Plugin {
 
       const exists = await this.fs.exists(filename);
       if (!exists) {
+        if (highlight.highlighted_at && highlight.highlighted_at.length > 0 &&
+          ((new Date(highlight.highlighted_at)) > (new Date(this.lastUpdate)))) {
+          this.lastUpdate = highlight.highlighted_at;
+        }
+
         let body = [`> ${highlight.text}`,
           `— [[${this.cachedBooks[highlight.book_id].normalizedTitle}]]`
         ].join("\n");
@@ -111,7 +118,7 @@ export default class ObsidianReadwise extends Plugin {
   writeCache(): void {
     const cache = {
       books: this.cachedBooks,
-      lastUpdate: (new Date()).toISOString()
+      lastUpdate: this.lastUpdate,
     };
 
     this.fs.write(this.cacheFilename, JSON.stringify(cache)).then(()=> {

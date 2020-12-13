@@ -9,6 +9,7 @@ export type Highlight = {
   book_id: number;
   text: string;
   note: string;
+  highlighted_at: string;
 }
 
 export default class ReadwiseClient {
