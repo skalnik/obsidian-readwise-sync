@@ -30,7 +30,7 @@ export default class ReadwiseClient {
 
   fetchHighlights(): Promise<[Highlight]> {
     console.log("Fetching highlights…");
-    const params = { highlighted_at__gt: this.lastUpdate };
+    const params = { page_size: "1000", highlighted_at__gt: this.lastUpdate };
 
     return this.apiRequest<[Highlight]>('/highlights', params);
   }
