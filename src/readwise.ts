@@ -37,6 +37,8 @@ export default class ReadwiseClient {
   }
 
   async apiRequest<T>(path: string, params: Record<string, string>): Promise<T> {
+    // The Readwise API doesn't include CORs headers. This is really pretty
+    // crap our user here 😭
     const url = new URL("https://cors-anywhere.herokuapp.com/" + this.baseUrl + path);
     url.search = new URLSearchParams(params).toString();
 
