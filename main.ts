@@ -40,15 +40,12 @@ export default class ObsidianReadwise extends Plugin {
     this.lastUpdate = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 365).toISOString();
     const exists = await this.fs.exists(this.cacheFilename);
     if (exists) {
-      console.log("Oh hey dope, cache exists");
       const data = await this.fs.read(this.cacheFilename);
       const cache = JSON.parse(data);
 
       this.cachedBooks = cache.books;
       this.lastUpdate = cache.lastUpdate;
     }
-
-    console.log(`Alright, lastUpdate: ${this.lastUpdate}`);
 
     this.client = new ReadwiseClient(this.settings.token, this.lastUpdate);
     this.fetchBooks();
@@ -76,7 +73,9 @@ export default class ObsidianReadwise extends Plugin {
           `**Read**: [[]]`,
         ].join("\n");
 
-        this.fs.write(filename, body).then(()=> console.log(`${normalizedTitle}.md created!`));
+        this.fs.write(filename, body).then(()=> {
+          console.log(`${normalizedTitle}.md created!`);
+        });
       }
     }
 
@@ -87,13 +86,10 @@ export default class ObsidianReadwise extends Plugin {
   async fetchHighlights(): Promise<void> {
     const highlights = await this.client.fetchHighlights();
     for (const highlight of highlights) {
-      console.log('I have a highlight, it is: ', highlight);
       const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
-      console.log('Imma save it as: ', filename);
 
       if (highlight.highlighted_at && highlight.highlighted_at.length > 0 &&
         ((new Date(highlight.highlighted_at)) > (new Date(this.lastUpdate)))) {
-        console.log(`Updating last update to: ${highlight.highlighted_at}`);
         this.lastUpdate = highlight.highlighted_at;
       }
 
@@ -112,7 +108,6 @@ export default class ObsidianReadwise extends Plugin {
         });
       }
     }
-    console.log("All highlights fetched!");
     this.writeCache();
   }
 
@@ -122,8 +117,6 @@ export default class ObsidianReadwise extends Plugin {
       lastUpdate: this.lastUpdate,
     };
 
-    this.fs.write(this.cacheFilename, JSON.stringify(cache)).then(()=> {
-      console.log("Cache updated!");
-    });
+    this.fs.write(this.cacheFilename, JSON.stringify(cache));
   }
 }
