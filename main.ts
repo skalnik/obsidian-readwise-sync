@@ -44,8 +44,6 @@ export default class ObsidianReadwise extends Plugin {
   }
 
   fetchBooks(): void {
-    console.log("Fetching books…");
-
     this.client.fetchBooks().then((apiBooks) => {
       for (const book of apiBooks) {
         const normalizedTitle = book.title.replace(forbiddenCharRegex, "-");
