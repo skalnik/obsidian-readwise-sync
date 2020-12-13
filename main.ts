@@ -91,13 +91,14 @@ export default class ObsidianReadwise extends Plugin {
       const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
       console.log('Imma save it as: ', filename);
 
+      if (highlight.highlighted_at && highlight.highlighted_at.length > 0 &&
+        ((new Date(highlight.highlighted_at)) > (new Date(this.lastUpdate)))) {
+        console.log(`Updating last update to: ${highlight.highlighted_at}`);
+        this.lastUpdate = highlight.highlighted_at;
+      }
+
       const exists = await this.fs.exists(filename);
       if (!exists) {
-        if (highlight.highlighted_at && highlight.highlighted_at.length > 0 &&
-          ((new Date(highlight.highlighted_at)) > (new Date(this.lastUpdate)))) {
-          this.lastUpdate = highlight.highlighted_at;
-        }
-
         let body = [`> ${highlight.text}`,
           `— [[${this.cachedBooks[highlight.book_id].normalizedTitle}]]`
         ].join("\n");
