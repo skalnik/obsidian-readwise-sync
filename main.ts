@@ -66,7 +66,7 @@ export default class ObsidianReadwise extends Plugin {
         title: book.title,
         normalizedTitle: normalizedTitle
       };
-      const filename = path.join(this.settings.resourcesDir, `${normalizedTitle}.md`);
+      const filename = path.join(this.settings.referencesDir, `${normalizedTitle}.md`);
       const exists = await this.fs.exists(filename);
       if (!exists) {
         const body = ['---',
