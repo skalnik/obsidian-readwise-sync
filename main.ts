@@ -92,7 +92,8 @@ export default class ObsidianReadwise extends Plugin {
   async fetchHighlights(): Promise<void> {
     const highlights = await this.client.fetchHighlights();
     for (const highlight of highlights) {
-      const filename = path.join(this.settings.inboxDir, `${highlight.id}.md`);
+      const name = highlight.id;
+      const filename = path.join(this.settings.inboxDir, `${name}.md`);
 
       if (highlight.highlighted_at && highlight.highlighted_at.length > 0 &&
         ((new Date(highlight.highlighted_at)) > (new Date(this.lastUpdate)))) {
@@ -110,7 +111,7 @@ export default class ObsidianReadwise extends Plugin {
         }
 
         this.fs.write(filename, body).then(() => {
-          console.log(`${highlight.id}.md created!`);
+          console.log(`${filename} created!`);
         });
       }
     }
