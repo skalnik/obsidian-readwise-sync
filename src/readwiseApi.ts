@@ -12,7 +12,7 @@ export type Highlight = {
   highlighted_at: string;
 }
 
-export default class ReadwiseClient {
+export default class ReadwiseApi {
   baseUrl = "https://readwise.io/api/v2"
   token: string;
   lastUpdate: string;

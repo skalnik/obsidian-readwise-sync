@@ -1,6 +1,6 @@
 "use strict";
 import { Notice, DataAdapter, Vault, Plugin } from 'obsidian';
-import ReadwiseClient from './src/readwise';
+import ReadwiseApi from './src/readwiseApi';
 import { ReadwiseSettings, ReadwiseSettingsTab } from './src/settings';
 import * as path from 'path';
 
@@ -15,7 +15,7 @@ export default class ObsidianReadwise extends Plugin {
   cacheFilename = ".cache.json";
   forbiddenCharRegex = /\*|"|\\|\/|<|>|:|\||\?/g;
 
-  client: ReadwiseClient;
+  client: ReadwiseApi;
   settings: ReadwiseSettings;
   fs: DataAdapter;
   vault: Vault;
@@ -53,7 +53,7 @@ export default class ObsidianReadwise extends Plugin {
       this.lastUpdate = cache.lastUpdate;
     }
 
-    this.client = new ReadwiseClient(this.settings.token, this.lastUpdate);
+    this.client = new ReadwiseApi(this.settings.token, this.lastUpdate);
     this.fetchBooks();
   }
 
