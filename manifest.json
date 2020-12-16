@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-readwise",
-	"name": "Obsidian Readwise",
+	"id": "obsidian-readwise-sync",
+	"name": "Obsidian Readwise Sync",
 	"version": "0.0.1",
 	"minAppVersion": "0.9.20",
 	"description": "Syncs Readwise highlights into Obsidian",

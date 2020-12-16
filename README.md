@@ -1,4 +1,4 @@
-# Obsidian ← Readwise
+# Obsidian ← Readwise Sync
 
 ⚠️ This is pretty basic. Use at your own risk! ⚠️
 
